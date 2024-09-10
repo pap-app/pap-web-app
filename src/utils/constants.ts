@@ -129,6 +129,51 @@ import { BadgeDollarSign , Link, House, Settings, LayoutDashboard, Link2, Flame,
     },
   ]
 
+
+  export const fakeCustormers =  [
+    {
+      name :  "miraji",
+      email : "blablab@gmail.com"
+    },
+    {
+      name :  "karabu",
+      email : "b@gmail.com"
+    },
+  ]
+
+
+  export const paymentScheduleDates = [
+  {
+    title : "today",
+    value : "today"
+  },
+  {
+    title : "tomorrow",
+    value : "tomorrow"
+  },
+  {
+    title : "7 days",
+    value : "next_week"
+  },
+  {
+    title : "1 month",
+    value : "next_month"
+  },
+  ]
+
+  export const currencies =  [
+     {
+      name : "APTOS",
+      value :  "APT"
+     },
+     {
+      name : "USDC",
+      value :  "USDC"
+     },
+  ]
+
+  export const  INVOICE_ABB =  "#XWZHZ1JJK"
+
   export const MUNA_PAY_INTRO_TEXT = `MunaPay is a payment solution for individuals and organisations to start accepting payments on Hedera. With a low-code solution, mobile-native design, and support for various payment methods, we make it easy for merchants to upgrade their payment system with crypto.`
 
 

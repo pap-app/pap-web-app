@@ -9,6 +9,8 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import { UserContextProvider } from "./poviders/user-context";
+import { AutoConnectProvider } from "./aptos-connector/auto-connector";
+import { WalletProvider } from "./aptos-connector/wallet-provider";
 
 
 const queryClient = new QueryClient()
@@ -23,8 +25,12 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
         shallowRouting
       />
       <UserContextProvider>
+        <AutoConnectProvider>
+          <WalletProvider>
 
     {children}
+    </WalletProvider>
+    </AutoConnectProvider>
     </UserContextProvider>
     </NextThemesProvider>
     </QueryClientProvider>

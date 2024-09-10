@@ -13,6 +13,7 @@ import Footer from "./Footer";
 export default function HomePage() {
   return (
     <div className="w-full ">
+      {/*CHANGED  THE  HERO  AURORA BG TO  BE  W-SCREEN  i'LL HAVE  TO SOLVE  IT   IN FUTURE*/}
    
      <Hero  />
      <Features  />

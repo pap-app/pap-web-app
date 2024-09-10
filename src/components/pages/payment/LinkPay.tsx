@@ -171,6 +171,7 @@ export default function LinkPay() {
         
           
   return (
+    <div className='w-full min-h-screen bg-yellow-500 flex items-center justify-center'>
    
     <div  className='w-[450px]   bg-background rounded-3xl p-5'>
    
@@ -256,6 +257,7 @@ export default function LinkPay() {
       </div>
 
    
+    </div>
     </div>
  
   )

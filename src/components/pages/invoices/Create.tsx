@@ -1,15 +1,540 @@
+
+"use client"
 import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
+import React, {useState, useEffect} from 'react'
+import { useForm, SubmitHandler } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select"
+  import { Textarea } from "@/components/ui/textarea"
+import axios from 'axios'
+import { useToast } from '@/components/ui/use-toast'
+import { useRouter } from 'next/navigation'
+import withAuth from '@/components/middleware/auth-middleware'
+import AddCstomer from '@/components/create-customer/AddCstomer'
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { currencies, fakeCustormers, paymentScheduleDates } from '@/utils/constants'
+import { COUNTRIES_DIAL_CODE } from '@/lib/countries-code'
+import { useUserContext } from '@/components/poviders/user-context'
+import { useQuery } from '@tanstack/react-query'
+
+
+const formSchema = z.object({
+  customer: z.string(),
+  invoiceNumber : z.string(),
+  dueDate : z.string(),
+  paymentToken : z.string(),
+  description  : z.string(),
+  InvoiceMemo  : z.string().min(9, {
+    message : "Memo must be at least 9 characters"
+  }),
+  InvoiceFooter  : z.string().min(9, {
+    message : "Footer must be at least 9 characters"
+  }),
+ itemDescriptioon  : z.string(),
+  itemPrice : z.coerce.number().min(1, {
+    message  : "Amount must be  greater than 1"
+  }),
+  itemQuantity : z.coerce.number().min(1, {
+    message  : "Amount must be  greater than 1"
+  }),
+
+tax : z.coerce.number()
+
+})
 
 export default function Create() {
+
+  const [isRedirecting, setisRedirecting] = useState(false)
+  const {userProfile}  =  useUserContext()
+  const [customers, setcustomers] = useState([])
+
+   console.log("user profile", userProfile)
+  const {toast}  = useToast()
+
+  const  router =  useRouter()
+
+
+      // 1. Define your form.
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      customer: "",
+      invoiceNumber  :  "open",
+      dueDate  :  "",
+      paymentToken  :  "",
+      description  : "",
+      itemDescriptioon  : "",
+      itemPrice  :  0,
+      itemQuantity : 0,
+      tax : 0
+     
+    },
+  })
+
+
+       const  PAY_BASE_URL = `https://got-be.onrender.com/pay/`
+       const  LOCAL_PAY_BASE_URL = `http://localhost:5000/pay/`
+       const  LOCAL_INVOICE_BASE_URL = `http://localhost:5000/invoice/`
+
+       const  LOCAL_CUSTOMER_BASE_URL = `http://localhost:5000/customer/`
+
+
+
+       //  FTECH  ALL  USER CUSTOMERS
+
+       const  fetchUserCustomers  =  async ()  =>  {
+      try {
+        const res =   await axios.get(`${LOCAL_CUSTOMER_BASE_URL}get-customers/${userProfile?.id}`)
+        setcustomers(res.data)
+
+      } catch (error) {
+        console.log("error  at fetching customers", error)
+        
+      }
+       }
+
+       useEffect(() => {
+        if(userProfile){
+          fetchUserCustomers()
+        }
+    
+       }, [userProfile])
+
+       console.log("customers", customers)
+       
+
+           // 2. Define a submit handler.
+  const onSubmit  =  async (values: z.infer<typeof formSchema>)=>{
+   setisRedirecting(true)
+
+    const  valuesData  =  {
+      userId  :  userProfile?.id,
+      customer:  values.customer,
+       memo  :  values.InvoiceMemo,
+      dueDate  :  values.dueDate,
+      paymentToken  :   values.paymentToken,
+      tax : values.tax,
+       items   : [
+        {
+         description : values.description,
+          quantity : values.itemQuantity,
+          price : values.itemPrice
+        }
+       ]
+      
+    }
+
+
+    console.log("values", valuesData)
+    try {
+      const  res  = await  axios.post(`${LOCAL_INVOICE_BASE_URL}create-invoice`,   valuesData)
+         toast({
+          title  : "New payment link created",
+          description :  "Youve  succefully created new payment link"
+         })
+           
+        setisRedirecting(false)
+     //router.push("/payment/payment-links")
+           console.log(res.status)
+      
+    } catch (error) {
+       console.log("error", error)
+       setisRedirecting(false)
+       toast({
+        title : "something went wrong",
+        description  : "something went wrong, report the issue to our customer support "
+       })
+      
+    }
+      console.log("the value", valuesData)
+ }
+
+  const  {watch} = form
+
+  const priceAmount = watch("itemPrice")
+  const itemQuantity =  watch("itemQuantity")
+  const  taxAmount  =  watch("tax")
+
+   const itemArray =  [
+    {
+      //description : values.description,
+       quantity :  itemQuantity,
+       price :  priceAmount
+     }
+   ]
+
+     // Calculate subtotal and total amounts
+     const subtotal = itemArray.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+
+        console.log("sub total", subtotal + taxAmount)
   return (
-    <div  className=' w-full flex items-center justify-center  border h-screen  mx-auto'>
-      <div className='flex flex-col items-center justify-center space-y-3 w-full '>
-         <h1 className='font-bold text-3xl md:text-6xl '>Coming soon..</h1>
-         <Image   src={`/img/building.svg`}  width={100} height={100} alt='building sketh' className='w-64  ' />
-         <Link href={`/dashboard`} className='py-2 px-6 rounded-xl border my-4'>Home</Link>
+    <div  className=' w-full      min-h-screen  mx-auto'>
+
+      <div  className='w-full bg-red-400 h-[60px] sticky top-0'>
+
       </div>
+     <div   className='max-w-3xl  mx-auto border rounded-xl min-h-screen  my-3 p-4'>
+  
+
+<Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+  
+      
+
+  
+  <div className='p-5 bg-gray-100  my-4 rounded-xl'>
+            <FormField
+          control={form.control}
+          name="customer"
+          render={({ field }) => (
+
+
+            <FormItem className=''>
+
+              <FormLabel>Customer</FormLabel>
+              
+                 <Select onValueChange={field.onChange} defaultValue={field.value}  >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select customer" />
+                  </SelectTrigger>
+                </FormControl>
+
+             
+                <SelectContent>
+
+                {customers?.map((item, i)  => (
+                   <SelectItem  key={i} value={item._id}  >{`(${item.customerName})  ${item.customerEmail}`}</SelectItem>
+                ))}
+
+                  
+<Dialog>
+  <DialogTrigger>
+    <Button className='my-3 w-full'>Add new customer</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Add customer</DialogTitle>
+      </DialogHeader>
+      <AddCstomer  />
+  </DialogContent>
+</Dialog>
+                
+                </SelectContent>
+              </Select>
+                 
+            </FormItem>
+
+            
+                       )}/> 
+
+
+                  
+
+</div>
+
+
+
+<div>
+   <h1 className=' my-3'>Invoice  Details</h1>
+
+<div  className='p-6 bg-gray-100 rounded-xl'>
+<div  className='flex  space-x-5 my-3 items-center '>
+   <p className='font-medium'>Invoice number</p>
+
+     <div className='p-2 rounded-lg border '>
+    <p className='text-sm'>AUTO GENERATED</p>
+     </div>
+</div>
+
+
+ <div className='flex  space-x-7 w-full items-center justify-between my-5'>
+
+   <div className=''>
+    <p className='font-medium'>Due in</p>
+   </div>
+<div className='flex space-x-3 items-center justify-center'>
+   <FormField
+          control={form.control}
+          name="dueDate"
+          render={({ field }) => (
+
+
+
+            <FormItem className='w-80 '>
+              
+                 <Select onValueChange={field.onChange} defaultValue={"tomorrow"}  >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="tomorrow" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                {paymentScheduleDates.map((item, i)  => (
+                  <SelectItem key={i} value={item.value}>{item.title}</SelectItem>
+                ))}
+                </SelectContent>
+              </Select>
+                 
+            </FormItem>
+
+            
+                       )}/>
+
+                      
+                       </div>
+ </div>
+
+
+ <div className='flex justify-between items-center'>
+
+  <div>
+     <p className='font-medium'>Recieve payment in </p>
+  </div>
+
+  <FormField
+          control={form.control}
+          name="dueDate"
+          render={({ field }) => (
+
+
+
+            <FormItem className='w-80 '>
+              
+                 <Select onValueChange={field.onChange} defaultValue={"APT"}  >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="APT" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                {currencies.map((item, i)  => (
+                  <SelectItem key={i} value={item.value}>{item.name}</SelectItem>
+                ))}
+                </SelectContent>
+              </Select>
+                 
+            </FormItem>
+
+            
+                       )}/>
+ </div>
+  <div>
+
+
+      
+
+
+</div>
+
+</div>
+
+
+  
+</div>
+<p>time {watch("dueDate")}</p>
+
+           <div  className='my-4'>
+
+              <h1 className='  font-medium my-3'>Item  <span  className='text-muted-foreground text-xs ml-2 '>Optional</span></h1>
+
+
+     
+
+          <div className=' p-6 bg-gray-100 rounded-xl'>
+<div className='flex space-x-3 justify-between'>
+          <FormField
+          control={form.control}
+          name="description"
+          rules={{required : true}}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Name"
+                  className=""
+                  {...field}
+                  type='text'
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+<FormField
+          control={form.control}
+          name="itemQuantity"
+          rules={{required : true}}
+          render={({ field }) => (
+            <FormItem>
+               <FormLabel>Quantity</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="1"
+                  className=""
+                  {...field}
+                  type='number'
+                  
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+<FormField
+          control={form.control}
+          name="itemPrice"
+          rules={{required : true}}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Price</FormLabel>
+              <FormControl>
+              
+                <Input
+                  placeholder="1"
+                  className=""
+                  {...field}
+                  type='number'
+                  
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+</div>
+<div className='flex justify-between items-center my-3'>
+          <FormField
+          control={form.control}
+          name="tax"
+          rules={{required : true}}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tax rate  <span  className='text-xs text-muted-foreground'>Optional</span></FormLabel>
+              <FormControl>
+              
+                <Input
+                  placeholder="optional"
+                  className=""
+                  {...field}
+                  type='number'
+                  
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className='flex space-x-5'>
+          <p>Subtotal</p>
+           <p>{subtotal} </p>
+        </div>
+          
+        </div> 
+          </div>
+
+     
+           </div>
+
+
+           
+           <div  className='my-4 w-full'>
+
+           <h1 className='  font-medium my-3'>Additional options</h1>
+
+           <div  className='p-6 bg-gray-100 rounded-xl w-full'>
+
+           <FormField
+          control={form.control}
+          name="InvoiceMemo"
+          rules={{required : true}}
+          render={({ field }) => (
+            <FormItem className='my-4'>
+               <FormLabel>Memo</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Invoice memo"
+                  className="resize-none h-16 "
+                  {...field}
+                 
+                  
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+<FormField
+          control={form.control}
+          name="InvoiceFooter"
+          rules={{required : true}}
+          render={({ field }) => (
+            <FormItem className='my-4'>
+               <FormLabel>Footer</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Invoice footer"
+                  className="resize-none h-16 "
+                  {...field}
+                 
+                  
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+           </div>
+             
+           </div>
+
+        
+           <Button type="submit" className='w-full'  disabled={isRedirecting}>{isRedirecting  ?  "Adding customer.."  :  "Save and  send"}</Button>
+
+       
+      </form>
+    </Form>
+ 
+     </div>
+
+
+      
 
     </div>
   )

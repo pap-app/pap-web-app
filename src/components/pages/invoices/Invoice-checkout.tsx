@@ -85,7 +85,7 @@ const formSchema = z.object({
       state : z.string(),
       zipCode :  z.string()
    })
-export default function CheckOut() {
+export default function InvoiceCheckOut() {
     const [txHash, settxHash] = useState("")
     const [isUser, setisUser] = useState(false)
     const [isUserLoading, setisUserLoading] = useState(true)
@@ -106,8 +106,8 @@ export default function CheckOut() {
 const params =  useParams()
     const  router =  useRouter()
     const sessionId = params.sessionId
-  const  PAY_BASE_URL = `https://got-be.onrender.com/pay/`
-   const  LOCAL_BASE_URL  = "http://localhost:5000/pay/"
+  const  PAY_BASE_URL = `https://got-be.onrender.com/invoice/`
+   const  LOCAL_BASE_URL  = "http://localhost:5000/invoice/"
    const  LOCAL_HOME_URL  = "http://localhost:5000"
    const  OFFICIAL__BASE_URL  = "http://localhost:5000"
 
@@ -142,7 +142,7 @@ const params =  useParams()
       console.log(`Connected to server with ID: ${socket.id}`);
     });
 
-    socket.on('paymentStatus', (newStatus) => {
+    socket.on('invoiceStatus', (newStatus) => {
       console.log("The payment status:", newStatus);
        if(newStatus.sessionId  === sessionId){
         setisCheckingOut(false)
@@ -183,119 +183,11 @@ const params =  useParams()
   fetchAccountInfo()
               fetchUserAPTbalance()
 
-            
-
-           /* magic.user.isLoggedIn().then(async magicIsLoggedIn => {
-              setisUser(magicIsLoggedIn);
-              if (magicIsLoggedIn) {
-                const publicAddress = (await magic.user.getMetadata()).publicAddress;
-                setisUserLoading(false)
-                setPublicAddress(publicAddress);
-                setUserMetadata(await magic.user.getMetadata());
-              }else if(! magicIsLoggedIn){
-                setisUserLoading(false)
-              }
-            });*/
-
-
                 
               }, [account, connected]);
 
 
-console.log("balances", balances)
-              // FETCH USER WALLET BALANCES
 
-            /*   const handleFetchBalances =  async ()  =>  {
-
-                try {
-                    const res  =  await axios.get(`${HEDERA_TESTNET}api/v1/accounts/${publicAddress}`)
-                    setbalances(res.data)
-                    console.log(res.data)
-                     const  BALANCE  = res?.data?.balance?.balance
-                     if(BALANCE){
-                        const  hbarBalance   =   Hbar.from(BALANCE, HbarUnit.Tinybar)
-                        // Convert Hbar to a JavaScript number (e.g., in Hbar or other units)
-    const balanceInHbar = hbarBalance.to(HbarUnit.Hbar).toNumber();
-
-                const formattedBalance =   balanceInHbar?.toFixed(2);
-                setformattedBalance(formattedBalance)
-                     }
-                   
-                    
-                } catch (error) {
-                    alert("something went wrong  fetching balance")
-
-                    console.log("error fetch balance", error)
-                    
-                }
-                
-               }
-
-                useEffect(() => {
-                    if(publicAddress){
-                  handleFetchBalances()
-                    }
-                }, [publicAddress])*/
-
-                
-                //  HANDLE  ON-CHAIN -LOGIN
-
-                const login = async () => {
-                    await magic.auth.loginWithEmailOTP({ email });
-                    setisUser(true);
-                  };
-
-                   // HANDLE ONCHAIN LOG OUT
-
-                   const logout = async () => {
-                    await magic.user.logout();
-                    setisUser(false);
-                  };
-
-                     // RECIEVER  TESTER
-
-                     
-
-                   //  HANDLE  HEDERA  TRANSAFER TOKENS
-
-                   const handleTransfer = async () => {
-                    try {
-                        const { publicKeyDer } = await magic.hedera.getPublicKey();
-                
-                        const magicSign = message => magic.hedera.sign(message);
-                        const magicWallet = new MagicWallet(publicAddress, new MagicProvider('testnet'), publicKeyDer, magicSign);
-                      
-                        let transaction = await new TransferTransaction()
-                          .setNodeAccountIds([new AccountId(3)])
-                          .addHbarTransfer(publicAddress, -1 * data?.session?.amount)
-                          .addHbarTransfer(data?.reciever?.userId?.wallet, data?.session?.amount)
-                          .freezeWithSigner(magicWallet);
-                    
-                        transaction = await transaction.signWithSigner(magicWallet);
-                        const result = await transaction.executeWithSigner(magicWallet);
-                        const receipt = await result.getReceiptWithSigner(magicWallet);
-                    
-                    
-                          console.log("transaction reciepet", receipt)
-                    
-                          console.log("tx result", result)
-                    
-                        setSendingTransaction(true);
-                    
-                        console.log(receipt.status.toString());
-                        console.log("tx id",result.transactionId.toString());
-
-                          return  result.transactionId.toString()
-                      }
-                        
-                     catch (error) {
-                          toast({
-                            variant  : "destructive",
-                            title  : "spmething went wrong",
-                            description : "something went  wrong please  check you connection and  try aagain"
-                          })
-                           console.log("transaction part error", error)
-                    }}
 
   const RECIEVER  = "0x09d29f0ec5b03fc73b59e35deb80356cde17b13b8db94ded34fc8130dc1da1d9"
                       const handleTransfer2 =  async ()  =>  {
@@ -328,7 +220,7 @@ console.log("balances", balances)
 
                       }
 
-                    //  HANDLE  HEDERA  TRANSAFER TOKENS
+                    //  HANDLE  SEND RECIEPT
 
                      const handleSendReciept =  async ()  =>  {
                       const EMAIL_BASE_URL =  "https://got-be.onrender.com/emails/send-reciept"
@@ -354,7 +246,6 @@ console.log("balances", balances)
 
                       const  handlePay = async ()  =>  {
                          const  txHash  = await  handleTransfer2()
-                         console.log("howdy we got tx", txHash)
                       }
 
 
@@ -467,7 +358,7 @@ console.log("balances", balances)
     const  SESSION_EXP_TIME =  data?.session?.durationTime
         
   
-    if(error){
+   /* if(error){
       return(
         <div className='w-full h-screen flex items-center justify-center'>
 
@@ -475,7 +366,7 @@ console.log("balances", balances)
           <p className='text-muted-foreground text-center'>Or reach out to our customer suport</p>
         </div>
       )
-    }
+    }*/
 
    /* if(isLoading){
       return(
@@ -501,9 +392,9 @@ className='w-24 h-24 text-indigo-500 animate-spin'
               const  getPaymentState =  ()  =>  {
                 if(! status   /*testTruth  === "hello"*/  ){
                   return(
-                    <>
+                <>
                     <div  className='flex  justify-between items-center  my-4 mb-6'>
-                       <h1  className='font-semibold  text-sm lg:text-xl'>{data?.reciever?.collectEmail ||  data?.reciever?.collectAddress ||  data?.reciever?.collectName  ?  "Fill  in the  details"   :  "Pay with"}</h1>
+                       <h1  className='font-semibold  text-sm lg:text-xl'>  Pay with</h1>
                          
                                 <CountdownTimer   expTime={SESSION_EXP_TIME}  />
                            
@@ -511,184 +402,11 @@ className='w-24 h-24 text-indigo-500 animate-spin'
                     </div>
                  
                    
-                    {data?.reciever?.collectEmail ||  
-                      data?.reciever?.collectName  ||
-                      data?.reciever?.collectAddress ?
-                    
-                      (
-                       <div>
-                         
-                         <h1 className='  font-semibold text-sm my-2  '>Contact  information</h1>
-                 
-                          
-                 
-                          <div> 
-                             
-                          <Form {...form}>
-                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                 
-                           {  data?.reciever?.collectName  &&
-                         <FormField
-                           control={form.control}
-                           name="payerName"
-                             rules={{
-                               required : false
-                             }}
-                           render={({ field }) => (
-                             
-                                  <FormItem  className='my-2'>
-                               <FormLabel>Name</FormLabel>
-                               <FormControl>
-                                 <Input type='text' placeholder="kabugu.." {...field} disabled={! isUser} />
-                               </FormControl>
-                               <FormMessage />
-                             </FormItem>      )}/> 
-                 
-                           }
-                 
-                 {  data?.reciever?.collectEmail
-                   &&
-                         <FormField
-                           control={form.control}
-                           name="payerEmail"
-                             rules={{
-                               required : false
-                             }}
-                           render={({ field }) => (
-                             
-                                  <FormItem  className='my-2'>
-                               <FormLabel>Email</FormLabel>
-                               <FormControl>
-                                 <Input  type='email' placeholder="example@gmail.com" {...field} disabled={! isUser} />
-                               </FormControl>
-                               <FormMessage />
-                             </FormItem>      )}/> 
-                 
-                           }
-                 
-                 {  data?.reciever?.collectAddress  &&
-                        
-                  <div>
-                                 <h1 className='mb-2'>Shipping address</h1>
-                                   <div>
-                 
-                                     
-                 <FormField
-                           control={form.control}
-                           name="country"
-                           render={({ field }) => (
-                 
-                             <FormItem className='my-1'>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}  >
-                                 <FormControl>
-                                   <SelectTrigger>
-                                     <SelectValue placeholder="Country" />
-                                   </SelectTrigger>
-                                 </FormControl>
-                                 <SelectContent>
-                                   {countries?.map((item, i)  =>  (
-                                     <SelectItem value={item.name?.common} key={i}>{item.name.common}</SelectItem>
-                                   ))}
-                                 </SelectContent>
-                               </Select>
-                                  
-                             </FormItem>
-                 
-                             
-                                        )}/>
-                 
-                 
-                 <FormField
-                           control={form.control}
-                           name="addressLine1"
-                             rules={{
-                               required : false
-                             }}
-                           render={({ field }) => (
-                             
-                                  <FormItem  className='my-1'>
-                               <FormControl>
-                                 <Input placeholder="Address line 1" {...field} disabled={! isUser} />
-                               </FormControl>
-                               <FormMessage />
-                             </FormItem>      )}/> 
-                 
-                             <FormField
-                           control={form.control}
-                           name="addressLine2"
-                             rules={{
-                               required : false
-                             }}
-                           render={({ field }) => (
-                             
-                                  <FormItem  className='my-1'>
-                               <FormControl>
-                                 <Input placeholder="address line 2" {...field} disabled={! isUser} />
-                               </FormControl>
-                               <FormMessage />
-                             </FormItem>      )}/> 
-                 
-                 
-                  <div  className='flex  space-x-3'>
-                  <FormField
-                           control={form.control}
-                           name="city"
-                             rules={{
-                               required : false
-                             }}
-                           render={({ field }) => (
-                             
-                                  <FormItem  className='my-1'>
-                               
-                               <FormControl>
-                                 <Input placeholder="City" {...field} disabled={! isUser} />
-                               </FormControl>
-                               <FormMessage />
-                             </FormItem>      )}/> 
-                 
-                             <FormField
-                           control={form.control}
-                           name="state"
-                             rules={{
-                               required : false
-                             }}
-                           render={({ field }) => (
-                             
-                                  <FormItem  className='my-1'>
-                               
-                               <FormControl>
-                                 <Input placeholder='State' {...field} disabled={! isUser} />
-                               </FormControl>
-                               <FormMessage />
-                             </FormItem>      )}/> 
-                 
-                             <FormField
-                           control={form.control}
-                           name="zipCode"
-                             rules={{
-                               required : false
-                             }}
-                           render={({ field }) => (
-                             
-                                  <FormItem  className='my-1'>
-                               
-                               <FormControl>
-                                 <Input placeholder="zip/pin code" {...field} disabled={! isUser} />
-                               </FormControl>
-                               <FormMessage />
-                             </FormItem>      )}/> 
-                  </div>
-                 
-                 
-                                   </div>
-                             </div>}
-                 
-                 
-                 <div  className='mt-4'>
-                      <p className='  md:font-semibold'>Continue with your preferred payment method</p>
-                 </div>
                   
-                    <Accordion type="single" collapsible className="w-full">
+                 
+                 
+                  
+                    <Accordion type="single" collapsible className="w-full my-4">
                     <AccordionItem value="item-1">
                       <AccordionTrigger>
                           <div  className='flex items-center space-x-2'>
@@ -705,7 +423,7 @@ className='w-24 h-24 text-indigo-500 animate-spin'
                          )  :  (
                              <div  className='space-y-2'>
                              <Input type='email'  value={email}  onChange={(e)  =>  setemail(e.target.value)} placeholder='example@gmail.com'  />
-                              <Button  className={`w-full `}  onClick={login}> <Mail className="mr-2 h-4 w-4" /> Continue with Email</Button>
+                              <Button  className={`w-full `}  > <Mail className="mr-2 h-4 w-4" /> Continue with Email</Button>
                  
                             
                              </div>
@@ -785,15 +503,13 @@ className='w-24 h-24 text-indigo-500 animate-spin'
                  
                          
                              
-                             </form>
-                             </Form>
-                              </div>
+                           
+                              
                  
                  
-                         
-                   </div>
-                    )  :  ""}
-                           </>
+                  </>
+                
+                  
                   )
                 
                    

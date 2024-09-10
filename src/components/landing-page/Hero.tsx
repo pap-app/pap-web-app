@@ -17,14 +17,14 @@ export default function Hero() {
       >
         <div  className=" flex items-center justify-center flex-col space-y-4  max-w-3xl p-4">
         <div className="text-3xl md:text-7xl font-bold dark:text-white text-center">
-          The payment layer on Hedera
+          The payment layer on Aptos
         </div>
         <div className="font-extralight text-center text-base md:text-4xl dark:text-neutral-200 py-4 ">
          
         Join the revolution of fast, reliable digital transactions.
         </div>
-        <Link href={`/login`} className="bg-black dark:bg-white rounded-full w-fit text-white dark:text-black px-4 py-2">
-          Get started
+        <Link href={`#waitlist`} className="bg-yellow-500 dark:bg-white rounded-full w-fit text-black dark:text-black px-6 py-3">
+          Join waitlist
         </Link>
         </div>
       </motion.div>

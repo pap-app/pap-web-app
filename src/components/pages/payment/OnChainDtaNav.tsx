@@ -20,6 +20,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { HEDERA_LOGO_URL } from '@/utils/constants'
 import { useQRCode } from 'next-qrcode'
+import { useWallet } from '@aptos-labs/wallet-adapter-react'
+import { WalletSelector2 } from '@/components/aptos-connector/wallet-selector2'
 
 
 type Props  =  {
@@ -28,12 +30,19 @@ type Props  =  {
 
 }
 export default function OnChainDtaNav({walletAddress, balance} : Props) {
+  const {connected}  = useWallet()
     const { Canvas } = useQRCode();
   return (
     <div className='w-full flex items-center justify-between px-3 h-[60px] sticky top-0 border-b mb-3 bg-background '>
         <ModeToggle  />
 
-        <div className=''>
+        <div className='flex items-center space-x-2'>
+      {connected && (
+                  <WalletSelector2    />
+
+
+      )}
+         
 
         <DropdownMenu>
       

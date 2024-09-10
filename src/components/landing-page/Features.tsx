@@ -34,8 +34,8 @@ export default function Features() {
 
         {features.map((item, i) =>  (
             <div key={i} className='border w-full md:w-[370px] p-4 rounded-xl hover:bg-muted'> 
-             <div className='p-3 rounded-full inline-flex items-center justify-center bg-indigo-600/30 mb-4'> 
-                <item.icone className='w-7 h-7 text-indigo-500' />
+             <div className='p-3 rounded-full inline-flex items-center justify-center bg-yellow-500/25 mb-4'> 
+                <item.icone className='w-7 h-7 text-yellow-600' />
                 </div> 
 
                 <div  className=''> 

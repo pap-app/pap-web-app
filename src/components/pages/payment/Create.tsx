@@ -104,13 +104,15 @@ const  Create = () =>  {
 
 
        const  PAY_BASE_URL = `https://got-be.onrender.com/pay/`
+       const  LOCAL_PAY_BASE_URL = `http://localhost:5000/pay/`
+
  
   // 2. Define a submit handler.
   const onSubmit  =  async (values: z.infer<typeof formSchema>)=>{
     setisRedirecting(true)
 
     try {
-      const  res  = await  axios.post(`${PAY_BASE_URL}create-link`,  values)
+      const  res  = await  axios.post(`${LOCAL_PAY_BASE_URL}create-link`,  values)
          toast({
           title  : "New payment link created",
           description :  "Youve  succefully created new payment link"
