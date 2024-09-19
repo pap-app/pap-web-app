@@ -18,7 +18,7 @@ import { BadgeDollarSign , Link, House, Settings, LayoutDashboard, Link2, Flame,
     export const HEDERA_MAINNET  = "https://mainnet.mirrornode.hedera.com/"
     export const HEDERA_TESTNET  = "https://testnet.mirrornode.hedera.com/"
     export const HEDERA_PREVIEW  = "https://preview.mirrornode.hedera.com/"
-    export const  HEDERA_LOGO_URL = "https://pbs.twimg.com/profile_images/1657693585234337792/0Y5Y6bnW_400x400.jpg"
+    export const  HEDERA_LOGO_URL = "https://pbs.twimg.com/profile_images/1556801889282686976/tuHF27-8_400x400.jpg"
 
 
     export const WEBSITE_BASE_URL = "https://www.munapay.xyz/"
@@ -171,6 +171,15 @@ import { BadgeDollarSign , Link, House, Settings, LayoutDashboard, Link2, Flame,
       value :  "USDC"
      },
   ]
+
+
+  export const testStatus =  {
+    amount: 3,
+invoiceId :"66dfec35f727f9e36b2f01e6",
+sender: "0x3495bf0e66f2ec6544be2aadf9326bb2dc3e11e33162843b87c705293b783ad8",
+status: "COMPLETED", 
+txHash: "0xf201e41e6061782c15ec74dc273ffe86a0cc0c077a379cc5662bb75110b58914"
+  }
 
   export const  INVOICE_ABB =  "#XWZHZ1JJK"
 

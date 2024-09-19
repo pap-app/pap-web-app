@@ -37,7 +37,7 @@ function CountdownTimer({ expTime }: Props) {
   }, [expTime]);
 
   return (
-    <div>
+    <div  className=''>
 
         {
             timeLeft  ===  "Expired"  ?  (

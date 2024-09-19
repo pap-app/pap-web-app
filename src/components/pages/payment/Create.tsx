@@ -31,7 +31,7 @@ import axios from 'axios'
 import { useToast } from '@/components/ui/use-toast'
 import { useRouter } from 'next/navigation'
 import withAuth from '@/components/middleware/auth-middleware'
- 
+import { useUserContext } from '@/components/poviders/user-context'
 const formSchema = z.object({
   linkName: z.string().min(5, {
     message : "Title must be at least 5 characters"
@@ -76,8 +76,11 @@ const formSchema = z.object({
 
 const  Create = () =>  {
   const [isRedirecting, setisRedirecting] = useState(false)
+  const {userProfile}  = useUserContext()
   const {toast}  = useToast()
 
+
+   
   const  router =  useRouter()
 
 
@@ -96,7 +99,7 @@ const  Create = () =>  {
       paymentTag : "",
       labelText : "",
       //recieverWallet : "",
-      userId  :  "",
+      userId  :  userProfile?.id,
       description : ""
      
     },
@@ -237,21 +240,7 @@ const  Create = () =>  {
                               </FormItem>      )}/> 
                        )}
 
-<FormField
-          control={form.control}
-          name="userId"
-            rules={{
-              required : false
-            }}
-          render={({ field }) => (
-            
-                 <FormItem  className='my-4'>
-              <FormLabel>user id</FormLabel>
-              <FormControl>
-                <Input placeholder="charity donation.." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>      )}/> 
+
 
 {/*
 <FormField

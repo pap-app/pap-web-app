@@ -53,9 +53,11 @@ export default function LinkPay() {
   const [isRedirecting, setisRedirecting] = useState(false)
 
      const  PAY_BASE_URL = `https://got-be.onrender.com/pay/`
+     const  LOCAL_PAY_BASE_URL = `https://got-be.onrender.com/pay/`
+
 
   const handleFetchLink  =   async ()  =>  {
-    const res  =  await  axios.get(`${PAY_BASE_URL}link/${linkId}`)
+    const res  =  await  axios.get(`${LOCAL_PAY_BASE_URL}link/${linkId}`)
      return res.data
   }
 

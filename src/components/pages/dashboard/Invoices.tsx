@@ -44,9 +44,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useUserContext } from '@/components/poviders/user-context'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Ellipsis } from 'lucide-react'
+import { Ellipsis, Plus } from 'lucide-react'
 import Paymentdetails from '@/components/sheet/payment-details'
 import InvoiceDetails from '@/components/sheet/InvoiceDetails'
+import Link from 'next/link'
 
 
 
@@ -89,16 +90,12 @@ export default function Invoices() {
        <div className='w-full flex  items-center justify-between my-4'>
          <h1 className='font-bold text-xl'>Invoices</h1>
 
-         <Select onValueChange={(e)  => setselectedValue(e)}  >
-  <SelectTrigger className="w-[180px]">
-    <SelectValue placeholder="All type" />
-  </SelectTrigger>
-  <SelectContent className='border-accent'>
-    <SelectItem value="one-time">One time</SelectItem>
-    <SelectItem value="subscriptions">Subscptions</SelectItem>
-  
-  </SelectContent>
-</Select>
+<Link href={`/invoices/create`}>
+ <Button>
+  <Plus className='w-4 h-4 mr-2'  />
+  Create invoice
+ </Button>
+ </Link>
        </div>
 
       <div>
@@ -124,7 +121,7 @@ export default function Invoices() {
             <TableCell className="font-medium text-muted-foreground">{ formatDate( item.createdAt)  }</TableCell>
             <TableCell className="text-left  items-start"> <div className='flex space-x-2 items-center justify-start font-medium text-muted-foreground'>
               <Image  src={HEDERA_LOGO_URL} width={70} height={70} alt='hedera logo' className='rounded-full w-4 h-4' />
-              <p>{item.amount} HBAR</p>
+              <p>{item.subtotal} {item?.paymentToken}</p>
               </div></TableCell>
               <TableCell> {` ${INVOICE_ABB}${item.invoiceNumber}`}</TableCell>
 
@@ -147,7 +144,7 @@ export default function Invoices() {
     <SheetHeader  className=' border-b'>
       <SheetTitle>Payments</SheetTitle>
    </SheetHeader>
-   <InvoiceDetails payment={item} time={ formatDate( item.createdAt) }   />
+   <InvoiceDetails payment={item} time={ formatDate( item.createdAt) }  dueDate={formatDate(item?.dueDate)}   />
   </SheetContent>
 </Sheet>
      

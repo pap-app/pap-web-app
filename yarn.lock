@@ -7444,6 +7444,18 @@ lossless-json@^1.0.5:
   resolved "https://registry.yarnpkg.com/lossless-json/-/lossless-json-1.0.5.tgz#26df1d7d52543a994df07f1b174cf5576fb1482b"
   integrity sha512-RicKUuLwZVNZ6ZdJHgIZnSeA05p8qWc5NW0uR96mpPIjN9WDLUg9+kj1esQU1GkPn9iLZVKatSQK5gyiaFHgJA==
 
+lottie-react@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/lottie-react/-/lottie-react-2.4.0.tgz#f7249eee2b1deee70457a2d142194fdf2456e4bd"
+  integrity sha512-pDJGj+AQlnlyHvOHFK7vLdsDcvbuqvwPZdMlJ360wrzGFurXeKPr8SiRCjLf3LrNYKANQtSsh5dz9UYQHuqx4w==
+  dependencies:
+    lottie-web "^5.10.2"
+
+lottie-web@^5.10.2:
+  version "5.12.2"
+  resolved "https://registry.yarnpkg.com/lottie-web/-/lottie-web-5.12.2.tgz#579ca9fe6d3fd9e352571edd3c0be162492f68e5"
+  integrity sha512-uvhvYPC8kGPjXT3MyKMrL3JitEAmDMp30lVkuq/590Mw9ok6pWcFCwXJveo0t5uqYw1UREQHofD+jVpdjBv8wg==
+
 lowercase-keys@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/lowercase-keys/-/lowercase-keys-1.0.1.tgz#6f9e30b47084d971a7c820ff15a6c5167b74c26f"
@@ -9144,7 +9156,15 @@ rc@^1.0.1, rc@^1.1.6:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-dom@^18:
+react-checkmark@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/react-checkmark/-/react-checkmark-2.1.1.tgz#cc8a7a6296470bdde3a5e89cb1d0ff7a36e04591"
+  integrity sha512-vWjlIlarvyB7mMAUXb1IO995J6xZQbI0q5T9EbEbyJGJH9znqheGs3cEy4IrPCk1b3W4G2n5iYkKfNzFQEcM+w==
+  dependencies:
+    react "^18.3.1"
+    react-dom "^18.3.1"
+
+react-dom@^18, react-dom@^18.3.1:
   version "18.3.1"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.3.1.tgz#c2265d79511b57d479b3dd3fdfa51536494c5cb4"
   integrity sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==
@@ -9217,7 +9237,7 @@ react-transition-group@^4.4.5:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
-react@^18:
+react@^18, react@^18.3.1:
   version "18.3.1"
   resolved "https://registry.yarnpkg.com/react/-/react-18.3.1.tgz#49ab892009c53933625bd16b2533fc754cab2891"
   integrity sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==
@@ -11039,6 +11059,13 @@ varint@^5.0.0, varint@~5.0.0:
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/varint/-/varint-5.0.2.tgz#5b47f8a947eb668b848e034dcfa87d0ff8a7f7a4"
   integrity sha512-lKxKYG6H03yCZUpAGOPOsMcGxd1RHCu1iKvEHYDPmTyq2HueGhD73ssNBqqQWfvYs04G9iUFRvmAVLW20Jw6ow==
+
+vaul@^0.9.3:
+  version "0.9.3"
+  resolved "https://registry.yarnpkg.com/vaul/-/vaul-0.9.3.tgz#363c21e7c7d404bacb81591c2ca1e8cc5cdc5829"
+  integrity sha512-VNWuzw37fw6DWptl9PMUc9PH5NJpGqpetcxDMRiH/GzH2inJAEMwo/uZqaONlGseeOG8xDtrrp3nYoiZhyabpw==
+  dependencies:
+    "@radix-ui/react-dialog" "^1.1.1"
 
 verror@1.10.0:
   version "1.10.0"

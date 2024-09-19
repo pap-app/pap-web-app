@@ -1,5 +1,5 @@
 
-//@ts-nocheck
+
 
 "use client"
 import { ModeToggle } from '@/components/switch-theme'
@@ -22,6 +22,15 @@ import {
   } from "@/components/ui/form"
 
   import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+  } from "@/components/ui/sheet"
+
+  import {
     Select,
     SelectContent,
     SelectItem,
@@ -29,7 +38,16 @@ import {
     SelectValue,
   } from "@/components/ui/select"
   import { useQRCode } from 'next-qrcode'
-
+  import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+  } from "@/components/ui/drawer"
   import {
     Accordion,
     AccordionContent,
@@ -43,7 +61,7 @@ import { z } from "zod"
 import axios from 'axios'
 import { Button } from "@/components/ui/button"
 import { useParams, useRouter } from 'next/navigation'
-import { AlertCircle, CheckCheckIcon, CircleCheckBig, Loader, Loader2, LoaderPinwheel, Mail, MessageCircleWarningIcon, Phone, QrCode, TimerIcon, UserRound, Wallet, X } from 'lucide-react'
+import { AlertCircle, CheckCheckIcon, ChevronRight, CircleCheckBig, Loader, Loader2, LoaderPinwheel, Mail, MessageCircleWarningIcon, MoveRight, Phone, QrCode, TimerIcon, UserRound, Wallet, X } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { Magic } from 'magic-sdk';
 import { HederaExtension } from '@magic-ext/hedera';
@@ -51,10 +69,10 @@ import { AccountId, TransferTransaction, Hbar, HbarUnit, HbarAllowance } from '@
 import { MagicWallet,  } from '@/utils/magicWallet';
 import { MagicProvider } from '@/utils/magicProvider';
 import CountdownTimer from '@/components/CountDown';
-import { HEDERA_TESTNET, WEBSITE_BASE_URL } from '@/utils/constants';
+import { HEDERA_LOGO_URL, HEDERA_TESTNET, INVOICE_ABB, WEBSITE_BASE_URL } from '@/utils/constants';
 import { AnimatePresence, motion } from "framer-motion"
 import Image from 'next/image';
-import { magic } from '@/lib/create-magic-link-instance';
+
 import OnChainDtaNav from './OnChainDtaNav';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { WalletSelector } from '@/components/aptos-connector/wallet-selector';
@@ -62,16 +80,15 @@ import { WalletSelector2 } from '@/components/aptos-connector/wallet-selector2';
 import { aptos } from '@/lib/aptos-config';
 import { toHumanReadable, toSmallestUnit } from '@/utils/aptosUtils';
 import { truncateText } from '@/lib/truncateTxt';
+import Lottie from "lottie-react";
+import CheckIcon  from '../../../animations/check-icon.json'
+import SuccessState from './success-state';
+import PaidState from './paid-status';
+import FailedState from './failedState';
 
 
 
-/*const magic = new Magic('pk_live_C8037E2E6520BBDF', {
-  extensions: [
-    new HederaExtension({
-      network: 'testnet',
-    }),
-  ],
-});*/
+
 
 
 const formSchema = z.object({
@@ -87,25 +104,20 @@ const formSchema = z.object({
    })
 export default function InvoiceCheckOut() {
     const [txHash, settxHash] = useState("")
-    const [isUser, setisUser] = useState(false)
-    const [isUserLoading, setisUserLoading] = useState(true)
     const [userMetadata, setUserMetadata] = useState({});
     const [sendingTransaction, setSendingTransaction] = useState(false);
-    const [email, setemail] = useState("")
-    const [publicAddress, setPublicAddress] = useState('');
-    const [destinationAddress, setDestinationAddress] = useState('');
-    const [status, setStatus] = useState();
-    const [sendAmount, setSendAmount] = useState(0);
     const [formattedBalance1, setformattedBalance] = useState()
     const [balances, setbalances] = useState()
     const [isCheckingOut, setisCheckingOut] = useState(false)
     const [testTruth, settestTruth] = useState(true)
+    const [isBro, setisBro] = useState(false)
+    const [status, setStatus] = useState()
     const {connected, connect, account, signAndSubmitTransaction} = useWallet()
  
     const {toast}  = useToast()
 const params =  useParams()
     const  router =  useRouter()
-    const sessionId = params.sessionId
+    const invoiceId = params.sessionId
   const  PAY_BASE_URL = `https://got-be.onrender.com/invoice/`
    const  LOCAL_BASE_URL  = "http://localhost:5000/invoice/"
    const  LOCAL_HOME_URL  = "http://localhost:5000"
@@ -114,7 +126,7 @@ const params =  useParams()
 
   const { Canvas } = useQRCode();
 
-  
+    console.log("invoice id", invoiceId)
         // 1. Define your form.
         const form = useForm<z.infer<typeof formSchema>>({
             resolver: zodResolver(formSchema),
@@ -144,7 +156,7 @@ const params =  useParams()
 
     socket.on('invoiceStatus', (newStatus) => {
       console.log("The payment status:", newStatus);
-       if(newStatus.sessionId  === sessionId){
+       if(newStatus.invoiceId  === invoiceId){
         setisCheckingOut(false)
        }
       
@@ -240,18 +252,11 @@ const params =  useParams()
                       }
                      }
 
-                      
-
-                  
-
-                      const  handlePay = async ()  =>  {
-                         const  txHash  = await  handleTransfer2()
-                      }
 
 
                       const  handleInitiatePayment =  async ()  =>  {
                         try {
-                            const  res  =  await axios.post(`${LOCAL_BASE_URL}initiate-payment/${sessionId}`)
+                            const  res  =  await axios.post(`${LOCAL_BASE_URL}initiate-payment/${invoiceId}`)
                               console.log(res.data)
                         } catch (error) {
                           console.log("something went wrong initiating payment", error)
@@ -264,23 +269,8 @@ const params =  useParams()
        
         
           // 2. Define a submit handler.
-          const onSubmit  =  async (values: z.infer<typeof formSchema>)=>{
+          const pay  =  async ()=>{
             setisCheckingOut(true)
-            /* const txHash =  await  handleTransfer()
-            const valueData =  {
-                 payerEmail : values.payerEmail,
-                 payerName : values.payerName,
-                 payerAddress : {
-                  country : values.country,
-                  addressLine1 : values.addressLine1,
-                  addressLine2 : values.addressLine2,
-                   city : values.city,
-                   state : values.state,
-                   zipCode : values.zipCode
-
-                 },
-                 transactionHash : txHash
-            }*/
         
             try {
               
@@ -288,26 +278,14 @@ const params =  useParams()
               await handleInitiatePayment()
               settxHash(txHash)
               const valueData =  {
-                   payerEmail : values.payerEmail,
-                   payerName : values.payerName,
-                   payerWallet : userMetadata,
-                   payerAddress : {
-                    country : values.country,
-                    addressLine1 : values.addressLine1,
-                    addressLine2 : values.addressLine2,
-                     city : values.city,
-                     state : values.state,
-                     zipCode : values.zipCode
-  
-                   },
-                   transactionHash : txHash
-                
-              }
-              const  res  = await  axios.post(`${LOCAL_BASE_URL}check-out/${sessionId}`,  valueData)
-                /* toast({
+                    txHash,
+                    senderWallet : account?.address
+               }
+              const  res  = await  axios.post(`${LOCAL_BASE_URL}check-out/${invoiceId}`,  valueData)
+                 toast({
                   title  : "New ;onk created",
                   description :  "Youve  succefully created new payment link"
-                 })*/
+                 })
                   //await   handleSendReciept()
                   
                    console.log(res.status)
@@ -315,10 +293,11 @@ const params =  useParams()
             } catch (error) {
                console.log("error", error)
                setisCheckingOut(false)
-               /*toast({
+               toast({
+              variant  : "destructive",
                 title : "something went wrong",
                 description  : "something went wrong check consol"
-               })*/
+               })
               
             }
               
@@ -328,22 +307,10 @@ const params =  useParams()
           }
   
     const handleFetchSession  =   async ()  =>  {
-      const res  =  await  axios.get(`${PAY_BASE_URL}session/${sessionId}`)
+      const res  =  await  axios.get(`${LOCAL_BASE_URL}get-invoice/${invoiceId}`)
        return res.data
     }
 
-    const handleFetchCountries  =   async ()  =>  {
-        const res  =  await  axios.get(`https://restcountries.com/v3.1/all?fields=name,flags`)
-         return res.data
-      }
-
-      const {data : countries, isError : isCountriesError, isSuccess : isCountriesSuccess, isLoading : isCountriesLOading, error : countriesErro}  = useQuery({
-        queryKey : ['countries'],
-        queryFn : handleFetchCountries
-       })
-
-    
-  
       const {data, isPending, isError, isSuccess, isLoading, error}  = useQuery({
        queryKey : ['sessionData'],
        queryFn : handleFetchSession
@@ -356,6 +323,13 @@ const params =  useParams()
 
 
     const  SESSION_EXP_TIME =  data?.session?.durationTime
+
+        // Function to format the date
+  const formatDate = (dateStr) => {
+    const dateObj = new Date(dateStr);
+    const formatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
+    return formatter.format(dateObj);
+  }
         
   
    /* if(error){
@@ -390,48 +364,43 @@ className='w-24 h-24 text-indigo-500 animate-spin'
             console.log("the  fromatted balance", formattedBalance1)
 
               const  getPaymentState =  ()  =>  {
-                if(! status   /*testTruth  === "hello"*/  ){
+
+                if(data?.invoice.status === "paid"   /*isBro*/){
+
+                  return(
+                   <PaidState  data={data}  status={status} />
+                  )
+
+                }else
+                if( ! status  &&  data?.invoice.status !== "paid"   /*isBro*/   ){
                   return(
                 <>
-                    <div  className='flex  justify-between items-center  my-4 mb-6'>
+                    <div  className='flex  justify-between items-center  my-6 mb-6'>
                        <h1  className='font-semibold  text-sm lg:text-xl'>  Pay with</h1>
                          
-                                <CountdownTimer   expTime={SESSION_EXP_TIME}  />
+                              
                            
                          
                     </div>
                  
                    
                   
-                 
-                 
+                 <div className='border p-3 rounded-xl'>
+                  <div className='flex items-center space-x-2 my-4 mb-6 '>
+                     <Wallet className='w-5 h-5'  />
+                     <p className=''>Wallet</p>
+                  </div>
+                   {! connected  ?  (
+                    <WalletSelector2  />
+                   ) : (
+                    <Button  onClick={pay} className={`w-full capitalize `} disabled={isCheckingOut}>{data?.reciever?.labelText ? `${data?.reciever?.labelText} Now` : isCheckingOut ? "Sending.." : "Continue to pay"}</Button>  
+
+                   )}
+                   </div>
                   
                     <Accordion type="single" collapsible className="w-full my-4">
-                    <AccordionItem value="item-1">
-                      <AccordionTrigger>
-                          <div  className='flex items-center space-x-2'>
-                              <Wallet className='w-5 h-5'  />
-                              <p>Wallet</p>
-                          </div>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                      <div>
-                         {isUser  ?  (
-                             <>
-                            <Button type="submit" className={`w-full capitalize ${! isUser && "hidden"}`} disabled={isCheckingOut}>{data?.reciever?.labelText ? `${data?.reciever?.labelText} Now` : isCheckingOut ? "Sending.." : "Continue to pay"}</Button>  
-                            </>
-                         )  :  (
-                             <div  className='space-y-2'>
-                             <Input type='email'  value={email}  onChange={(e)  =>  setemail(e.target.value)} placeholder='example@gmail.com'  />
-                              <Button  className={`w-full `}  > <Mail className="mr-2 h-4 w-4" /> Continue with Email</Button>
                  
-                            
-                             </div>
-                         )}
-                      </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="item-2">
+                    <AccordionItem value="item-2" className='my-3 border px-2 rounded-xl'>
                       <AccordionTrigger>
                          <div  className='flex items-center space-x-2'><QrCode className='w-5 h-5'  />
                          <p>Scan QR  code</p>
@@ -439,21 +408,21 @@ className='w-24 h-24 text-indigo-500 animate-spin'
                       </AccordionTrigger>
                       <AccordionContent className='flex  items-center justify-center  '>
                          <div  className='my-4  flex  items-center justify-center  flex-col'>
-                             <div  className=''>
+                             <div  className=' bg-slate-100 rounded-xl p-2'>
                       <Canvas
-                       text={`${WEBSITE_BASE_URL}payment/checkout-session/${sessionId}`}
+                       text={`${WEBSITE_BASE_URL}payment/checkout-session/${invoiceId}`}
                        options={{
                          errorCorrectionLevel: 'M',
                          margin: 2,
                          scale: 20,
                          width: 190,
                          color: {
-                             dark: '#2563eb',
+                             dark: '#09090b',
                              light: '#f8fafc',
                            },
                        }}
                        logo={{
-                         src: 'https://pbs.twimg.com/profile_images/1657693585234337792/0Y5Y6bnW_400x400.jpg',
+                         src: 'https://pbs.twimg.com/profile_images/1556801889282686976/tuHF27-8_400x400.jpg',
                          options: {
                            width: 35,
                            x: undefined,
@@ -466,7 +435,7 @@ className='w-24 h-24 text-indigo-500 animate-spin'
                  
                    <div  className='border  p-3 mt-3 rounded-xl'>
                        <div  className='my-4 '>
-                          <h1  className='font-semibold text-sm  lg:text-lg mb-1'>{`Send HBAR  on Hedera network`}</h1>
+                          <h1  className='font-medium text-sm   mb-1'>{`Send ${data?.invoice?.paymentToken}  on Aptos network`}</h1>
                            <div className='flex items-center  space-x-1'>
                               <MessageCircleWarningIcon  className='w-3 h-3 text-muted-foreground'  />
                                <p  className='text-xs  text-muted-foreground'>Sending funds on the wrong network or token leads to fund loss.</p>
@@ -474,12 +443,12 @@ className='w-24 h-24 text-indigo-500 animate-spin'
                        </div>
                        <Button disabled ={isCheckingOut || ! status}  className='w-full '>
                        
-                      { status &&  status.status  === "COMPLETED"  && status.sessionId === sessionId ?  (
+                      { status &&  status.status  === "COMPLETED"  && status.invoiceId === invoiceId ?  (
                         <>
                         <CheckCheckIcon className="mr-2 h-4 w-4" />
                          Payment made succfully
                          </>
-                         )  : status &&  status.status  === "FAILED"  && status.sessionId === sessionId? (
+                         )  : status &&  status.status  === "FAILED"  && status.invoiceId === invoiceId? (
                           <>
                               <AlertCircle className='mr-2 h-4 w-4 text-red-600' />
                               Payment failed
@@ -499,15 +468,7 @@ className='w-24 h-24 text-indigo-500 animate-spin'
                    
                   </Accordion>
                    
-                   
-                 
-                         
-                             
-                           
-                              
-                 
-                 
-                  </>
+                       </>
                 
                   
                   )
@@ -518,95 +479,23 @@ className='w-24 h-24 text-indigo-500 animate-spin'
                   
                               
                   
-                }  else if(status &&  status.status  === "COMPLETED"  && status.sessionId === sessionId /*testTruth*/ ){
+                }  else if(status &&  status.status  === "COMPLETED"  && status.invoiceId === invoiceId /*testTruth*/ ){
      return(
-      <AnimatePresence>
-      < motion.div  
-      className='flex items-center justify-center  w-full p-5 rounded-xl border  '
-      initial={{ y : 10 }}
-      transition={{ease : "easeIn", duration : 10}}
-      animate={{ y: -10 }}
-      exit={{ opacity: 0 }}
-      key={"success"}
-      >
-         <div  className='  w-full items-center justify-center  '>
-       
-
-  <div className='border-b pb-6 pt-5 flex flex-col justify-center items-center '>
-  <CircleCheckBig  className='w-10 h-10 mb-4 text-green-600' />
-      <h1  className='text-xl leading-snug font-semibold text-center'>Payment Confirmed!</h1>
-       <h2 className='text-muted-foreground text-xs text-center'>Thank you for your payment.  Your transaction has been securely processed</h2>
-  </div>
-
-   <div className=' mt-4  p-2'>
-    <div className='flex justify-between w-full my-3'>
-      <h3 className='font-semibold text-sm '>Amount</h3>
-       <h4 className='text-muted-foreground'>{data?.session.amount}</h4>
-    </div>
-    <div className='flex justify-between w-full my-3'>
-      <h3 className='font-semibold text-sm'>From</h3>
-       <h4 className='text-muted-foreground text-sm'>{userMetadata?.publicAddress}</h4>
-    </div>
-    <div className='flex justify-between w-full my-3'>
-      <h3 className='font-semibold text-sm'>To</h3>
-       <h4 className='text-muted-foreground text-sm'>{data?.reciever?.userId.wallet  ? data?.reciever?.userId?.wallet  : "-" }</h4>
-    </div>
-    <div className='flex justify-between w-full my-3'>
-      <h3 className='font-semibold text-sm'>Tx hash</h3>
-       <h4 className='text-muted-foreground text-sm'>{txHash ?  truncateText(txHash,25,9,9)  : "-"}</h4>
-    </div>
-     
-   </div>
-
-     <div>
-       
-       <h1 className=' text-xs text-center mt-4 text-muted-foreground hidden'>Weve  emailed your receipt to <span className='text-blue-600'>kabuguabdul2@gmail.com</span></h1>
-     </div>
-         </div>
-
-      </motion.div>
-      </AnimatePresence>
+      <SuccessState data={data} status={status} />
      )
-                }else if(status &&  status.status  === "FAILED"  && status.sessionId === sessionId ){
+                }else if(status &&  status.status  === "FAILED"  && status.invoiceId === invoiceId  /*! testTruth*/ ){
                   return(
-                    <AnimatePresence>
-                    < motion.div  
-                    className='flex items-center justify-center  w-full p-5 rounded-xl border  '
-                    initial={{ y : 10 }}
-                    transition={{ease : "easeInOut", duration : 2}}
-                    animate={{ y: -10 }}
-                    exit={{ opacity: 0 }}
-                    key={"error"}
-                    >
-                       <div  className='  w-full items-center justify-center  '>
-                     
-              
-                <div className='border-b pb-6 pt-5 flex flex-col justify-center items-center '>
-                <X  className='w-10 h-10 mb-4 text-red-600' />
-                    <h1  className='text-xl leading-snug font-semibold text-center'>Oops, Something Went Wrong!</h1>
-                     <h2 className='text-muted-foreground text-xs text-center'>Unfortunately, your payment didn’t go through. Please check your balance and try again later, or reach out to our customer support for assistance.</h2>
-                </div>
-              
-                 
-              
-                   <div>
-                     
-                     <h1 className=' text-xs text-center mt-4 text-muted-foreground'>Need assistance  contact our customer support</h1>
-                   </div>
-                       </div>
-              
-                    </motion.div>
-                    </AnimatePresence>
+                    <FailedState  />
                    )
 
-                }else if( status &&  status.status  === "PENDING"  && status.sessionId === sessionId  /*! testTruth */){
+                }else if( status &&  status.status  === "PENDING"   /*! testTruth*/){
                   return(
                     <AnimatePresence>
                     < motion.div  
                     className='flex items-center justify-center  w-full p-5 rounded-xl border  '
-                    initial={{ y : 2 }}
+                    initial={{ y : 3 }}
                     transition={{ease : "easeIn", duration : 1}}
-                    animate={{ y: -2 }}
+                    animate={{ y: -3 }}
                     exit={{ opacity: 0 }}
                     key={"pending"}
                     >
@@ -614,7 +503,7 @@ className='w-24 h-24 text-indigo-500 animate-spin'
                      
               
                 <div className=' pb-6 pt-5 flex flex-col justify-center items-center '>
-                <Loader2  className='w-16 h-16 mb-4 text-blue-500 animate-spin' />
+                <Loader2  className='w-16 h-16 mb-4  animate-spin' />
                     <h1  className='text-xl leading-snug font-semibold text-center'>Processing Your Payment </h1>
                      <h2 className='text-muted-foreground text-sm text-center'></h2>
                 </div>
@@ -635,7 +524,7 @@ className='w-24 h-24 text-indigo-500 animate-spin'
     {/*} <OnChainDtaNav walletAddress={userMetadata?.publicAddress} balance={formattedBalance1} />*/}
 
     {connected  &&  (
-      <div className='absolute right-2'> 
+      <div className='absolute right-2 mb-4'> 
   <WalletSelector2  />
 
       </div>
@@ -643,23 +532,40 @@ className='w-24 h-24 text-indigo-500 animate-spin'
         <div  className='flex flex-col md:flex-row lg:space-x-1 '>
           <div  className='flex-1 w-full md:min-h-screen bg-zinc-50 items-center justify-center relative   p-6  '>
         
-               <div  className='my-5'>
-                 <h1  className='text-lg  font-medium my-2'>{data?.reciever?.linkName}</h1>
-                  <h2  className='text-muted-foreground text-xs'>{data?.reciever?.description}</h2>
+               <div  className='my-8'>
+                <div className='flex space-x-8'>
+                   <p className='text-sm text-muted-foreground'>Invoice</p>
+                    <div className='border text-blue-500 text-sm'>{INVOICE_ABB}{data?.invoice?.invoiceNumber}</div>
+                </div>
+                <div className='flex space-x-2 my-3'>
+                   <Image  src={HEDERA_LOGO_URL} width={100} height={100} alt='currency logo' className='w-8 h-8 rounded-full' />
+                   <p className='font-medium text-2xl'>{data?.invoice?.subtotal}</p>
+                   <p className='font-medium text-2xl'>{data?.invoice?.paymentToken}</p>
+                </div>
+                <div className='flex items-center space-x-4'>
+                   <p>Due date</p>
+               <p className='text-xs text text-muted-foreground'>     {data?.invoice?.dueDate}</p>
+                    
+                </div>
                </div>
 
                  <div  className='my-5  h-[1.5px]  bg-muted'></div>
 
-                  <div  className='flex  space-x-2  items-center'>
-                    <Image src={"https://pbs.twimg.com/profile_images/1657693585234337792/0Y5Y6bnW_400x400.jpg"} height={100} width={100} alt='token logo' 
-                      className='w-4 h-4 rounded-full'
-                    />
-                     <p>{data?.session?.amount} HBAR</p>
+                  <div  className=''>
+                   <div className='flex items-center justify-between w-full pb-3 mb-3 '>
+                     <p className='text-sm text-muted-foreground'>To</p>
+                     <p className='text-sm text-muted-foreground'>{data?.invoice?.customer?.customerName}</p>
+                   </div>
+                   <div className='flex items-center justify-between w-full pb-3 mb-3 border-b'>
+                     <p className='text-sm text-muted-foreground'>From</p>
+                     <p className='text-sm text-muted-foreground'>{data?.invoice?.customer?.customerName}</p>
+                   </div>
+
+                   
+  
                   </div>
 
-                  <div className='my-5  flex items-center justify-center lg:justify-start lg:items-start'>
-                     <Image     src={`/img/messi.png`}  width={300} height={300} alt='product image' className='border w-56 h-52 md:w-72 md:h-80 object-cover'  />
-                  </div>
+                
 
                    <div  className='absolute bottom-14 w-full hidden lg:flex'>
                      powerd by me

@@ -30,8 +30,10 @@ const formSchema = z.object({
     lastName : z.string(),
     wallet : z.string(),
     brandColor  : z.string(),
-    businessName : z.string()
-   // recieverWallet :  z.string()
+    businessName : z.string(),
+    supportEmail : z.string(),
+    connectedWallet : z.string()
+
   
   })
 export default function Settings() {
@@ -59,7 +61,8 @@ export default function Settings() {
       businessName : data?.user?.businessName || "",
       wallet : data?.user?.wallet || "",
       brandColor : data?.user?.brandColor || "",
-      
+      supportEmail :  data?.user?.email || "no email"
+       
      
     },
   })
@@ -109,12 +112,12 @@ export default function Settings() {
      <p>Customize your checkout page</p>
    </div>
    <div>
-     <div className=' max-w-xl'> 
+     <div className=' border-b'> 
      <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="firstName"
+          name="businessName"
             rules={{
               required : true
             }}
@@ -122,9 +125,9 @@ export default function Settings() {
             
                  <FormItem  className='my-5'>
                     <div className='flex justify-between items-center space-x-4'>
-              <FormLabel className=''>First name</FormLabel>
-              <FormControl className='w-[70%]'>
-                <Input placeholder="kabugu." {...field} />
+              <FormLabel className=''>Business name</FormLabel>
+              <FormControl className='max-w-[200px]'>
+                <Input placeholder="business name" {...field} />
               </FormControl>
               </div>
               <FormMessage />
@@ -133,7 +136,7 @@ export default function Settings() {
 
             <FormField
           control={form.control}
-          name="lastName"
+          name="supportEmail"
             rules={{
               required : true
             }}
@@ -141,9 +144,9 @@ export default function Settings() {
             
                  <FormItem  className='my-5'>
                     <div className='flex justify-between items-center space-x-4'>
-              <FormLabel className=''>Last name</FormLabel>
-              <FormControl className='w-[70%]'>
-                <Input placeholder="kabugu." {...field} />
+              <FormLabel className=''>Support email</FormLabel>
+              <FormControl className='max-w-[300px]'>
+                <Input  {...field} />
               </FormControl>
               </div>
               <FormMessage />
